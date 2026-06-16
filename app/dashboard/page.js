@@ -16,15 +16,34 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-      <h2>Welcome, {user.name}! 👋</h2>
-      <p>You logged in <strong>{user.email}</strong></p>
-      <form action="/api/auth/logout" method="POST">
-        <button type="submit"
-          style={{ marginTop: 20, padding: "10px 20px", background: "#e00", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>
-          Logout
-        </button>
-      </form>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-lg">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome, {user.name}! 👋
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Logged in as <span className="font-semibold text-blue-600">{user.email}</span>
+        </p>
+
+        <div className="flex gap-4">
+          {user.role === "admin" && (
+            <a
+              href="/admin"
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Admin Panel 👑
+            </a>
+          )}
+          <form action="/api/auth/logout" method="POST">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

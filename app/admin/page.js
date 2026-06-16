@@ -18,69 +18,73 @@ export default function AdminPage() {
 
   async function handleDelete(id) {
     if (!confirm("Kya aap sure hain?")) return
-
-    const res = await fetch(`/api/auth/users/${id}`, {
-      method: "DELETE",
-    })
+    const res = await fetch(`/api/auth/users/${id}`, { method: "DELETE" })
     const data = await res.json()
-
     if (!res.ok) return alert(data.error)
-
-    // List se user hatao
     setUsers(users.filter(u => u.id !== id))
-    alert("User delete ho gaya!")
   }
 
-  if (error) return <p style={{ color: "red", padding: 40 }}>{error}</p>
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <p className="text-red-500 text-lg">{error}</p>
+    </div>
+  )
 
   return (
-    <div style={{ maxWidth: 800, margin: "80px auto", padding: 24 }}>
-      <h2>Admin Panel 👑</h2>
-      <h3 style={{ marginTop: 24 }}>Saare Users:</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
-        <thead>
-          <tr style={{ background: "#0070f3", color: "#fff" }}>
-            <th style={{ padding: 10, textAlign: "left" }}>ID</th>
-            <th style={{ padding: 10, textAlign: "left" }}>Name</th>
-            <th style={{ padding: 10, textAlign: "left" }}>Email</th>
-            <th style={{ padding: 10, textAlign: "left" }}>Role</th>
-            <th style={{ padding: 10, textAlign: "left" }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td style={{ padding: 10 }}>{u.id}</td>
-              <td style={{ padding: 10 }}>{u.name}</td>
-              <td style={{ padding: 10 }}>{u.email}</td>
-              <td style={{ padding: 10 }}>
-                <span style={{
-                  background: u.role === "admin" ? "#e00" : "#0070f3",
-                  color: "#fff", padding: "2px 8px", borderRadius: 4
-                }}>
-                  {u.role}
-                </span>
-              </td>
-              <td style={{ padding: 10 }}>
-                {u.role !== "admin" && (
-                  <button
-                    onClick={() => handleDelete(u.id)}
-                    style={{
-                      background: "#e00", color: "#fff",
-                      border: "none", padding: "6px 12px",
-                      borderRadius: 4, cursor: "pointer"
-                    }}>
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <a href="/dashboard" style={{ display: "inline-block", marginTop: 20, color: "#0070f3" }}>
-        ← Dashboard pe jao
-      </a>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Admin Panel 👑</h2>
+          <p className="text-gray-500 mt-1">Manage all users from here</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-blue-600 text-white">
+              <tr>
+                <th className="px-6 py-3 text-left">ID</th>
+                <th className="px-6 py-3 text-left">Name</th>
+                <th className="px-6 py-3 text-left">Email</th>
+                <th className="px-6 py-3 text-left">Role</th>
+                <th className="px-6 py-3 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u, i) => (
+                <tr key={u.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <td className="px-6 py-4 text-gray-700">{u.id}</td>
+                  <td className="px-6 py-4 text-gray-700">{u.name}</td>
+                  <td className="px-6 py-4 text-gray-700">{u.email}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
+                      u.role === "admin" ? "bg-red-500" : "bg-blue-500"
+                    }`}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {u.role !== "admin" && (
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-6">
+          <a href="/dashboard" className="text-blue-600 hover:underline text-sm">
+          
+            ← Back to the Dashboard
+          </a>
+        </div>
+      </div>
     </div>
   )
 }
