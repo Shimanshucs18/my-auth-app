@@ -1,20 +1,9 @@
-import { cookies } from "next/headers"
-import jwt from "jsonwebtoken"
-import { redirect } from "next/navigation"
+import { requireAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("token")?.value
-
-  if (!token) redirect("/login")
-
-  let user
-  try {
-    user = jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    redirect("/login")
-  }
+  // Ek line mein auth check!
+  const user = await requireAuth()
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
