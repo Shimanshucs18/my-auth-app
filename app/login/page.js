@@ -2,6 +2,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { loginSchema } from "@/lib/validations"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" })
@@ -14,9 +17,7 @@ export default function LoginPage() {
     setServerError("")
     setErrors({})
 
-    // Zod validation
     const result = loginSchema.safeParse(form)
-
     if (!result.success) {
       const fieldErrors = {}
       result.error.issues.forEach(err => {
@@ -41,7 +42,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text.gray-800">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
 
         {serverError && (
           <p className="bg-red-100 text-red-600 p-3 rounded mb-4 text-sm">{serverError}</p>
@@ -49,14 +50,14 @@ export default function LoginPage() {
 
         {/* Email Field */}
         <div className="mb-4">
-          <input
-            placeholder="Email"
+          <Label htmlFor="email" className="mb-1 block">Email</Label>
+          <Input
+            id="email"
             type="email"
+            placeholder="abc@gmail.com"
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            }`}
+            className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && (
             <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -65,29 +66,27 @@ export default function LoginPage() {
 
         {/* Password Field */}
         <div className="mb-6">
-          <input
-            placeholder="Password"
+          <Label htmlFor="password" className="mb-1 block">Password</Label>
+          <Input
+            id="password"
             type="password"
+            placeholder="••••••••"
             value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })}
-            className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.password ? "border-red-500" : "border-gray-300"
-            }`}
+            className={errors.password ? "border-red-500" : ""}
           />
           {errors.password && (
             <p className="text-red-500 text-xs mt-1">{errors.password}</p>
           )}
         </div>
 
-        <button
+        <Button
           onClick={handleSubmit}
           disabled={loading}
-          className={`w-full py-2 rounded-lg text-white font-semibold transition ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-          }`}
+          className="w-full"
         >
           {loading ? "Logging in..." : "Login"}
-        </button>
+        </Button>
 
         <p className="mt-4 text-center text-sm text-gray-600">
           No account?{" "}

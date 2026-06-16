@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 import { redirect } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 export default async function DashboardPage() {
   const cookieStore = await cookies()
@@ -18,31 +19,43 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-lg">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Welcome, {user.name}! 👋
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Logged in as <span className="font-semibold text-blue-600">{user.email}</span>
-        </p>
 
-        <div className="flex gap-4">
+        {/* User Info */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">
+            Welcome, {user.name}! 👋
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Logged in as{" "}
+            <span className="font-semibold text-blue-600">{user.email}</span>
+          </p>
+        </div>
+
+        {/* Role Badge */}
+        <div className="mb-6">
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
+            user.role === "admin" ? "bg-red-500" : "bg-blue-500"
+          }`}>
+            {user.role === "admin" ? "👑 Admin" : "👤 User"}
+          </span>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3">
           {user.role === "admin" && (
-            <a
-              href="/admin"
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-            >
-              Admin Panel 👑
+            <a href="/admin">
+              <Button variant="outline">
+                Admin Panel 👑
+              </Button>
             </a>
           )}
           <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-            >
+            <Button variant="destructive" type="submit">
               Logout
-            </button>
+            </Button>
           </form>
         </div>
+
       </div>
     </div>
   )

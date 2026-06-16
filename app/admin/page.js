@@ -1,11 +1,10 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 export default function AdminPage() {
   const [users, setUsers] = useState([])
   const [error, setError] = useState("")
-  const router = useRouter()
 
   useEffect(() => {
     fetch("/api/auth/users")
@@ -17,7 +16,7 @@ export default function AdminPage() {
   }, [])
 
   async function handleDelete(id) {
-    if (!confirm("Kya aap sure hain?")) return
+    if (!confirm("Are you sure you want to delete this user?")) return
     const res = await fetch(`/api/auth/users/${id}`, { method: "DELETE" })
     const data = await res.json()
     if (!res.ok) return alert(data.error)
@@ -33,30 +32,38 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Admin Panel 👑</h2>
-          <p className="text-gray-500 mt-1">Manage all users from here</p>
+
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Admin Panel 👑</h2>
+            <p className="text-gray-500 mt-1 text-sm">Manage all users from here</p>
+          </div>
+          <a href="/dashboard">
+            <Button variant="outline">← Back to Dashboard</Button>
+          </a>
         </div>
 
+        {/* Users Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <table className="w-full">
             <thead className="bg-blue-600 text-white">
               <tr>
-                <th className="px-6 py-3 text-left">ID</th>
-                <th className="px-6 py-3 text-left">Name</th>
-                <th className="px-6 py-3 text-left">Email</th>
-                <th className="px-6 py-3 text-left">Role</th>
-                <th className="px-6 py-3 text-left">Action</th>
+                <th className="px-6 py-3 text-left text-sm">ID</th>
+                <th className="px-6 py-3 text-left text-sm">Name</th>
+                <th className="px-6 py-3 text-left text-sm">Email</th>
+                <th className="px-6 py-3 text-left text-sm">Role</th>
+                <th className="px-6 py-3 text-left text-sm">Action</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u, i) => (
                 <tr key={u.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                  <td className="px-6 py-4 text-gray-700">{u.id}</td>
-                  <td className="px-6 py-4 text-gray-700">{u.name}</td>
-                  <td className="px-6 py-4 text-gray-700">{u.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{u.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{u.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{u.email}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
                       u.role === "admin" ? "bg-red-500" : "bg-blue-500"
                     }`}>
                       {u.role}
@@ -64,12 +71,13 @@ export default function AdminPage() {
                   </td>
                   <td className="px-6 py-4">
                     {u.role !== "admin" && (
-                      <button
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDelete(u.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
                       >
                         Delete
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -78,12 +86,6 @@ export default function AdminPage() {
           </table>
         </div>
 
-        <div className="mt-6">
-          <a href="/dashboard" className="text-blue-600 hover:underline text-sm">
-          
-            ← Back to the Dashboard
-          </a>
-        </div>
       </div>
     </div>
   )

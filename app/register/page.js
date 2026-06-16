@@ -2,6 +2,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { registerSchema } from "@/lib/validations"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" })
@@ -14,12 +17,10 @@ export default function RegisterPage() {
     setServerError("")
     setErrors({})
 
-    // Zod validation
     const result = registerSchema.safeParse(form)
-
     if (!result.success) {
       const fieldErrors = {}
-      result.error.issues .forEach(err => {
+      result.error.issues.forEach(err => {
         fieldErrors[err.path[0]] = err.message
       })
       setErrors(fieldErrors)
@@ -51,13 +52,13 @@ export default function RegisterPage() {
 
         {/* Name Field */}
         <div className="mb-4">
-          <input
-            placeholder="Name"
+          <Label htmlFor="name" className="mb-1 block">Name</Label>
+          <Input
+            id="name"
+            placeholder="Enter your name"
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
-            className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? "border-red-500" : "border-gray-300"
-            }`}
+            className={errors.name ? "border-red-500" : ""}
           />
           {errors.name && (
             <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -66,14 +67,14 @@ export default function RegisterPage() {
 
         {/* Email Field */}
         <div className="mb-4">
-          <input
-            placeholder="Email"
+          <Label htmlFor="email" className="mb-1 block">Email</Label>
+          <Input
+            id="email"
             type="email"
+            placeholder="Enter your email"
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            }`}
+            className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && (
             <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -82,26 +83,23 @@ export default function RegisterPage() {
 
         {/* Password Field */}
         <div className="mb-6">
-          <input
-            placeholder="Password"
+          <Label htmlFor="password" className="mb-1 block">Password</Label>
+          <Input
+            id="password"
             type="password"
+            placeholder="••••••••"
             value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })}
-            className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.password ? "border-red-500" : "border-gray-300"
-            }`}
+            className={errors.password ? "border-red-500" : ""}
           />
           {errors.password && (
             <p className="text-red-500 text-xs mt-1">{errors.password}</p>
           )}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          className="w-full py-2 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 transition"
-        >
+        <Button onClick={handleSubmit} className="w-full">
           Register
-        </button>
+        </Button>
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Already have an account?{" "}
