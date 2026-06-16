@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "my-auth-app",
   "version": "0.1.0",
   "private": true,
@@ -6,11 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "node --experimental-vm-modules scripts/seed-admin.js"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.18.0",
     "next": "16.2.9",
     "radix-ui": "^1.6.0",
