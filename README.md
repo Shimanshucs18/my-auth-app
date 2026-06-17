@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Auth System — Next.js + PostgreSQL + Docker
+
+A production-ready authentication and authorization system built with Next.js, PostgreSQL, and Docker, featuring JWT-based sessions with refresh tokens, role-based access control, rate limiting, and server-side route protection.
+
+## Features
+
+- User registration and login with bcrypt password hashing
+- JWT access tokens (15 min) + refresh tokens (7 days) for persistent sessions
+- Role-based authorization (Admin / User)
+- Admin panel to view and delete users
+- Server-side route protection via Next.js Middleware
+- Rate limiting — account locks for 1 minute after 5 failed login attempts
+- Form and API validation using Zod
+- Styled with Tailwind CSS and Shadcn UI components
+- Admin seeding script — no public admin registration
+
+## Tech Stack
+
+- **Frontend:** Next.js (App Router), Tailwind CSS, Shadcn UI
+- **Backend:** Next.js API Routes
+- **Database:** PostgreSQL (Docker)
+- **Auth:** JWT, bcrypt, Refresh Tokens
+- **Validation:** Zod
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Shimanshucs18/my-auth-app.git
+cd my-auth-app
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start PostgreSQL with Docker
+
+```bash
+docker run --name auth-db -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=authdb -p 5432:5432 -d postgres
+```
+
+### 4. Set up environment variables
+
+Create a `.env.local` file in the root:
+
+```
+DATABASE_URL=postgresql://postgres:secret@localhost:5432/authdb
+JWT_SECRET=your_secret_key
+```
+You can replace `your_secret_key` with any random string. To generate a secure one, run:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+### 5. Create database tables
+
+Connect to PostgreSQL:
+
+```bash
+docker exec -it auth-db psql -U postgres -d authdb
+```
+
+Run:
+
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role VARCHAR(20) DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE refresh_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE login_attempts (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(150) NOT NULL,
+  attempts INTEGER DEFAULT 0,
+  locked_until TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### 6. Seed the first admin
+
+```bash
+npm run seed
+```
+
+This creates the first admin account:
+- Email: `admin@myapp.com`
+- Password: `Admin@123`
+
+### 7. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Project Structure
+app/
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+├── api/auth/          # Login, register, logout, refresh, users APIs
 
-## Learn More
+├── login/             # Login page
 
-To learn more about Next.js, take a look at the following resources:
+├── register/          # Register page
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+├── dashboard/         # Protected user dashboard
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+└── admin/             # Protected admin panel
 
-## Deploy on Vercel
+lib/
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+├── db.js              # Database connection
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+├── auth.js            # Centralized auth helpers
+
+├── validations.js     # Zod schemas
+
+└── axios-client.js    # Axios instance with auto-refresh
+
+scripts/
+
+└── seed-admin.js       # Admin seeding script
+
+middleware.js           # Route protection
