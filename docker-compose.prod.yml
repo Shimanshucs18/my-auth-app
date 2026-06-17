@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    container_name: auth-db-prod
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: authdb
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-app-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/authdb
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    depends_on:
+      - db
+
+volumes:
+  postgres_data_prod:
