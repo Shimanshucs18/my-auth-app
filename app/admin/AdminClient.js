@@ -63,13 +63,13 @@ export default function AdminClient({ currentUser }) {
                   <td className="px-6 py-4 text-sm text-gray-700">{u.email}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                      u.role === "admin" ? "bg-red-500" : "bg-blue-500"
+                      u.role === "ADMIN" ? "bg-red-500" : "bg-blue-500"
                     }`}>
                       {u.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    {u.role !== "admin" && (
+                    {u.role !== "ADMIN" && (
                       <Button
                         variant="destructive"
                         size="sm"

@@ -20,7 +20,7 @@ export async function GET() {
   }
 
   // Admin check karo
-  if (user.role !== "admin") {
+  if (user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

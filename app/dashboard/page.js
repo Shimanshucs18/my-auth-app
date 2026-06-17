@@ -23,15 +23,15 @@ export default async function DashboardPage() {
         {/* Role Badge */}
         <div className="mb-6">
           <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
-            user.role === "admin" ? "bg-red-500" : "bg-blue-500"
+            user.role === "ADMIN" ? "bg-red-500" : "bg-blue-500"
           }`}>
-            {user.role === "admin" ? "👑 Admin" : "👤 User"}
+            {user.role === "ADMIN" ? "👑 Admin" : "👤 User"}
           </span>
         </div>
 
         {/* Buttons */}
         <div className="flex gap-3">
-          {user.role === "admin" && (
+          {user.role === "ADMIN" && (
             <a href="/admin">
               <Button variant="outline">
                 Admin Panel 👑

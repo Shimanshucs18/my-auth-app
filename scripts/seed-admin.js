@@ -29,7 +29,7 @@ async function seedAdmin() {
     // Admin save karo
     await pool.query(
       "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-      ["Admin", "admin@myapp.com", hashed, "admin"]
+      ["Admin", "admin@myapp.com", hashed, "ADMIN"]
     )
 
     console.log("✅ Admin created successfully!")
