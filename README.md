@@ -6,13 +6,14 @@ A production-ready authentication and authorization system built with Next.js, P
 
 - User registration and login with bcrypt password hashing
 - JWT access tokens (15 min) + refresh tokens (7 days) for persistent sessions
-- Role-based authorization (Admin / User)
+- Role-based authorization (Admin / User / Seller / Support)
 - Admin panel to view and delete users
 - Server-side route protection via Next.js Middleware
 - Rate limiting — account locks for 1 minute after 5 failed login attempts
 - Form and API validation using Zod
 - Styled with Tailwind CSS and Shadcn UI components
 - Admin seeding script — no public admin registration
+- Dockerized for both development and production
 
 ## Tech Stack
 
@@ -22,7 +23,7 @@ A production-ready authentication and authorization system built with Next.js, P
 - **Auth:** JWT, bcrypt, Refresh Tokens
 - **Validation:** Zod
 
-## Getting Started
+## Getting Started (Without Docker Compose)
 
 ### 1. Clone the repository
 
@@ -47,15 +48,15 @@ docker run --name auth-db -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=authdb -p 5
 
 Create a `.env.local` file in the root:
 
-```
 DATABASE_URL=postgresql://postgres:secret@localhost:5432/authdb
-JWT_SECRET=your_secret_key
-```
+JWT_SECRET=your_secret_key 
+
 You can replace `your_secret_key` with any random string. To generate a secure one, run:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
 ### 5. Create database tables
 
 Connect to PostgreSQL:
@@ -72,7 +73,7 @@ CREATE TABLE users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(150) UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  role VARCHAR(20) DEFAULT 'user',
+  role VARCHAR(20) DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER', 'SELLER', 'SUPPORT')),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -111,7 +112,41 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Running with Docker Compose (Recommended)
+
+Instead of running the app and database separately, you can run everything together with Docker Compose.
+
+### Development
+
+```bash
+docker-compose up
+```
+
+This starts both the PostgreSQL database and the Next.js app in development mode.
+
+Once running, seed the first admin:
+
+```bash
+docker exec -it auth-app-dev npm run seed
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production
+
+Create a `.env` file in the root with production secrets:
+
+DB_PASSWORD=your_strong_production_password
+JWT_SECRET=your_production_secret_key 
+
+Then run:
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
 ## Project Structure
+
 app/
 
 ├── api/auth/          # Login, register, logout, refresh, users APIs
@@ -138,4 +173,15 @@ scripts/
 
 └── seed-admin.js       # Admin seeding script
 
-middleware.js           # Route protection
+middleware.js            # Route protection
+
+docker-compose.yml        # Development environment
+
+docker-compose.prod.yml   # Production environment
+
+Dockerfile                # Multi-stage build for the Next.js app 
+
+## Roadmap
+
+- [x] Expand roles to ADMIN, USER, SELLER, SUPPORT
+- [x] Docker Compose for dev and production environments
