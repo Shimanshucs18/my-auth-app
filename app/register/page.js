@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState("")
   const [success, setSuccess] = useState("")
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   async function handleSubmit() {
@@ -25,14 +26,16 @@ export default function RegisterPage() {
       })
       setErrors(fieldErrors)
       return
-    }
+    } 
 
+    setLoading(true)
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     })
     const data = await res.json()
+    setLoading(false)
     if (!res.ok) return setServerError(data.error)
     setSuccess("Account created! Redirecting to login...")
     setTimeout(() => router.push("/login"), 1500)
@@ -97,8 +100,8 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <Button onClick={handleSubmit} className="w-full">
-          Register
+        <Button onClick={handleSubmit} disabled={loading} className="w-full">
+          {loading ? "Creating Account..." : "Register"}
         </Button>
 
         <p className="mt-4 text-center text-sm text-gray-600">
