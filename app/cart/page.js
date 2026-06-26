@@ -1,32 +1,34 @@
-"use client"
-import { useEffect } from "react"
-import { useCartStore } from "@/lib/cart-store"
-import { products } from "@/lib/products-data"
-import { Button } from "@/components/ui/button"
+"use client";
+import { useEffect } from "react";
+import { useCartStore } from "@/lib/cart-store";
+import { products } from "@/lib/products-data";
+import { Button } from "@/components/ui/button";
 
 export default function CartPage() {
-  const { items, fetchCart, removeFromCart, loading } = useCartStore()
+  const { items, fetchCart, removeFromCart, loading } = useCartStore();
 
   useEffect(() => {
-    fetchCart()
-  }, [])
+    fetchCart();
+  }, []);
 
-  const cartDetails = items.map((item) => {
-    const product = products.find((p) => p.id === item.product_id)
-    return { ...item, product }
-  }).filter((item) => item.product)
+  const cartDetails = items
+    .map((item) => {
+      const product = products.find((p) => p.id === item.product_id);
+      return { ...item, product };
+    })
+    .filter((item) => item.product);
 
   const subtotal = cartDetails.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
-    0
-  )
+    0,
+  );
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">Loading cart...</p>
       </div>
-    )
+    );
   }
 
   if (cartDetails.length === 0) {
@@ -37,7 +39,7 @@ export default function CartPage() {
           <Button>Browse Products</Button>
         </a>
       </div>
-    )
+    );
   }
 
   return (
@@ -78,11 +80,16 @@ export default function CartPage() {
             </p>
             <p className="text-2xl font-bold">Subtotal: ₹{subtotal}</p>
           </div>
-          <a href="/orders">
-            <Button>Checkout</Button>
-          </a>
+          <Button
+            onClick={async () => {
+              await fetch("/api/orders", { method: "POST" });
+              window.location.href = "/orders";
+            }}
+          >
+            Checkout
+          </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
