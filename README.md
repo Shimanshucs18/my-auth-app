@@ -49,7 +49,7 @@ docker run --name auth-db -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=authdb -p 5
 Create a `.env.local` file in the root:
 
 DATABASE_URL=postgresql://postgres:secret@localhost:5432/authdb
-JWT_SECRET=your_secret_key 
+JWT_SECRET=your_secret_key
 
 You can replace `your_secret_key` with any random string. To generate a secure one, run:
 
@@ -57,42 +57,13 @@ You can replace `your_secret_key` with any random string. To generate a secure o
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-### 5. Create database tables
-
-Connect to PostgreSQL:
+### 5. Run database migrations
 
 ```bash
-docker exec -it auth-db psql -U postgres -d authdb
+npm run migrate
 ```
 
-Run:
-
-```sql
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(150) UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  role VARCHAR(20) DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER', 'SELLER', 'SUPPORT')),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE refresh_tokens (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  token TEXT NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE login_attempts (
-  id SERIAL PRIMARY KEY,
-  email VARCHAR(150) NOT NULL,
-  attempts INTEGER DEFAULT 0,
-  locked_until TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+This creates all required tables (users, refresh_tokens, login_attempts, cart_items, orders, order_items).
 
 ### 6. Seed the first admin
 
@@ -101,6 +72,7 @@ npm run seed
 ```
 
 This creates the first admin account:
+
 - Email: `admin@myapp.com`
 - Password: `Admin@123`
 
@@ -137,7 +109,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Create a `.env` file in the root with production secrets:
 
 DB_PASSWORD=your_strong_production_password
-JWT_SECRET=your_production_secret_key 
+JWT_SECRET=your_production_secret_key
 
 Then run:
 
@@ -149,37 +121,37 @@ docker-compose -f docker-compose.prod.yml up -d
 
 app/
 
-├── api/auth/          # Login, register, logout, refresh, users APIs
+├── api/auth/ # Login, register, logout, refresh, users APIs
 
-├── login/             # Login page
+├── login/ # Login page
 
-├── register/          # Register page
+├── register/ # Register page
 
-├── dashboard/         # Protected user dashboard
+├── dashboard/ # Protected user dashboard
 
-└── admin/             # Protected admin panel
+└── admin/ # Protected admin panel
 
 lib/
 
-├── db.js              # Database connection
+├── db.js # Database connection
 
-├── auth.js            # Centralized auth helpers
+├── auth.js # Centralized auth helpers
 
-├── validations.js     # Zod schemas
+├── validations.js # Zod schemas
 
-└── axios-client.js    # Axios instance with auto-refresh
+└── axios-client.js # Axios instance with auto-refresh
 
 scripts/
 
-└── seed-admin.js       # Admin seeding script
+└── seed-admin.js # Admin seeding script
 
-middleware.js            # Route protection
+middleware.js # Route protection
 
-docker-compose.yml        # Development environment
+docker-compose.yml # Development environment
 
-docker-compose.prod.yml   # Production environment
+docker-compose.prod.yml # Production environment
 
-Dockerfile                # Multi-stage build for the Next.js app 
+Dockerfile # Multi-stage build for the Next.js app
 
 ## Roadmap
 
