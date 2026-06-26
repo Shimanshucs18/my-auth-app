@@ -28,46 +28,61 @@ export async function GET() {
   return NextResponse.json({ orders: ordersWithItems })
 }
 
-// Place an order by checkout out from the cart.
+// Place an order by checking out from the cart.
 export async function POST() {
   const user = await getAuthenticatedUser()
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const cartResult = await pool.query(
-    "SELECT * FROM cart_items WHERE user_id = $1",
-    [user.id]
-  )
+  const client = await pool.connect()
 
-  if (cartResult.rows.length === 0) {
-    return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
-  }
+  try {
+    await client.query("BEGIN")
 
-  const itemsWithPrice = cartResult.rows.map((item) => {
-    const product = products.find((p) => p.id === item.product_id)
-    return { ...item, price: product?.price || 0 }
-  })
-
-  const total = itemsWithPrice.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
-
-  const orderResult = await pool.query(
-    "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING *",
-    [user.id, total]
-  )
-  const order = orderResult.rows[0]
-
-  for (const item of itemsWithPrice) {
-    await pool.query(
-      "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)",
-      [order.id, item.product_id, item.quantity, item.price]
+    const cartResult = await client.query(
+      "SELECT * FROM cart_items WHERE user_id = $1",
+      [user.id]
     )
+
+    if (cartResult.rows.length === 0) {
+      await client.query("ROLLBACK")
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
+    }
+
+    const itemsWithPrice = cartResult.rows.map((item) => {
+      const product = products.find((p) => p.id === item.product_id)
+      return { ...item, price: product?.price || 0 }
+    })
+
+    const total = itemsWithPrice.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    )
+
+    const orderResult = await client.query(
+      "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING *",
+      [user.id, total]
+    )
+    const order = orderResult.rows[0]
+
+    for (const item of itemsWithPrice) {
+      await client.query(
+        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)",
+        [order.id, item.product_id, item.quantity, item.price]
+      )
+    }
+
+    await client.query("DELETE FROM cart_items WHERE user_id = $1", [user.id])
+
+    await client.query("COMMIT")
+
+    return NextResponse.json({ message: "Order placed!", order })
+  } catch (error) {
+    await client.query("ROLLBACK")
+    console.error("Order creation failed:", error)
+    return NextResponse.json({ error: "Failed to place order" }, { status: 500 })
+  } finally {
+    client.release()
   }
-
-  await pool.query("DELETE FROM cart_items WHERE user_id = $1", [user.id])
-
-  return NextResponse.json({ message: "Order placed!", order })
 }
