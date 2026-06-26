@@ -1,19 +1,20 @@
-"use client"
-import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+"use client";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const [user, setUser] = useState(null)
-  const pathname = usePathname()
+  const [user, setUser] = useState(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/auth/profile")
       .then((res) => res.json())
       .then((data) => setUser(data.user))
-      .catch(() => setUser(null))
-  }, [pathname])
+      .catch(() => setUser(null));
+  }, [pathname]);
 
-  if (!user) return null
+  if (!user) return null;
 
   const linksByRole = {
     USER: [
@@ -25,15 +26,16 @@ export default function Navbar() {
       { href: "/seller/dashboard", label: "Seller Dashboard" },
       { href: "/products", label: "Products" },
     ],
-    ADMIN: [
-      { href: "/admin", label: "Admin Panel" },
-    ],
-    SUPPORT: [
-      { href: "/support", label: "Support Dashboard" },
-    ],
-  }
+    ADMIN: [{ href: "/admin", label: "Admin Panel" }],
+    SUPPORT: [{ href: "/support", label: "Support Dashboard" }],
+  };
 
-  const links = linksByRole[user.role] || []
+  const links = linksByRole[user.role] || [];
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
 
   return (
     <nav className="bg-white shadow-sm px-6 py-3 flex items-center gap-6">
@@ -43,13 +45,21 @@ export default function Navbar() {
           key={link.href}
           href={link.href}
           className={`text-sm ${
-            pathname === link.href ? "text-blue-600 font-semibold" : "text-gray-600"
+            pathname === link.href
+              ? "text-blue-600 font-semibold"
+              : "text-gray-600"
           }`}
         >
           {link.label}
         </a>
       ))}
       <span className="ml-auto text-sm text-gray-500">{user.name}</span>
+      <button
+        onClick={handleLogout}
+        className="text-sm text-red-500 hover:underline"
+      >
+        Logout
+      </button>
     </nav>
-  )
+  );
 }
