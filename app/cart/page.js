@@ -1,15 +1,21 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useCartStore } from "@/lib/cart-store";
 import { products } from "@/lib/products-data";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function CartPage() {
   const { items, fetchCart, removeFromCart, loading } = useCartStore();
 
-  useEffect(() => {
+  const stableFetchCart = useCallback(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
+
+  useEffect(() => {
+    stableFetchCart();
+  }, [stableFetchCart]);
 
   const cartDetails = items
     .map((item) => {
@@ -35,9 +41,9 @@ export default function CartPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
         <p className="text-gray-500 text-lg mb-4">Your cart is empty.</p>
-        <a href="/products">
+        <Link href="/products">
           <Button>Browse Products</Button>
-        </a>
+        </Link>
       </div>
     );
   }
@@ -50,10 +56,12 @@ export default function CartPage() {
         <div className="bg-white rounded-xl shadow-md divide-y">
           {cartDetails.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-4">
-              <img
+              <Image
                 src={item.product.image}
                 alt={item.product.name}
-                className="w-20 h-20 object-cover rounded-lg"
+                width={80}
+                height={80}
+                className="object-cover rounded-lg"
               />
               <div className="flex-1">
                 <h3 className="font-semibold">{item.product.name}</h3>

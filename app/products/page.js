@@ -6,6 +6,7 @@ import { products, categories } from "@/lib/products-data"
 import { useCartStore } from "@/lib/cart-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Image from "next/image";
 
 export default function ProductsPage() {
   const [search, setSearch] = useState("")
@@ -45,7 +46,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {filtered.map((p) => (
             <div key={p.id} className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col">
-              <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
+              <Image src={p.image} alt={p.name} width={400} height={192} className="w-full h-48 object-cover" />
               <div className="p-4 flex flex-col flex-1">
                 <h3 className="font-semibold text-lg">{p.name}</h3>
                 <p className="text-sm text-gray-500">{p.category}</p>

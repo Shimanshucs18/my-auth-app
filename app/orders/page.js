@@ -1,38 +1,39 @@
-"use client"
-import { useEffect, useState } from "react"
-import { products } from "@/lib/products-data"
-import { Button } from "@/components/ui/button"
+"use client";
+import { useEffect, useState } from "react";
+import { products } from "@/lib/products-data";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/orders")
       .then((res) => res.json())
       .then((data) => {
-        setOrders(data.orders || [])
-        setLoading(false)
-      })
-  }, [])
+        setOrders(data.orders || []);
+        setLoading(false);
+      });
+  }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">Loading orders...</p>
       </div>
-    )
+    );
   }
 
   if (orders.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
         <p className="text-gray-500 text-lg mb-4">No orders yet.</p>
-        <a href="/products">
+        <Link href="/products">
           <Button>Browse Products</Button>
-        </a>
+        </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -57,13 +58,20 @@ export default function OrdersPage() {
 
               <div className="divide-y">
                 {order.items.map((item) => {
-                  const product = products.find((p) => p.id === item.product_id)
+                  const product = products.find(
+                    (p) => p.id === item.product_id,
+                  );
                   return (
-                    <div key={item.id} className="flex justify-between py-2 text-sm">
-                      <span>{product?.name || "Unknown product"} × {item.quantity}</span>
+                    <div
+                      key={item.id}
+                      className="flex justify-between py-2 text-sm"
+                    >
+                      <span>
+                        {product?.name || "Unknown product"} × {item.quantity}
+                      </span>
                       <span>₹{item.price * item.quantity}</span>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -76,5 +84,5 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
