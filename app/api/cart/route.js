@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { products } from "@/lib/products-data";
 import { addToCartSchema } from "@/lib/validations";
 
-// User ki cart items lo
 export async function GET() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -29,7 +28,6 @@ export async function GET() {
   return NextResponse.json({ items: result.rows });
 }
 
-// Cart mein product add karo
 export async function POST(req) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -47,7 +45,6 @@ export async function POST(req) {
 
   const body = await req.json();
 
-  // Zod validation
   const result = addToCartSchema.safeParse(body);
   if (!result.success) {
     const errors = {};
@@ -59,17 +56,36 @@ export async function POST(req) {
 
   const { productId, quantity } = result.data;
 
-  // Check karo — product actually exist karta hai?
+  // Product exist karta hai?
   const product = products.find((p) => p.id === productId);
   if (!product) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  // Check karo — product already cart mein hai?
+  // Out of stock check
+  if (product.stock === 0) {
+    return NextResponse.json(
+      { error: "Product is out of stock" },
+      { status: 400 },
+    );
+  }
+
+  // Existing cart item check
   const existing = await pool.query(
     "SELECT * FROM cart_items WHERE user_id = $1 AND product_id = $2",
     [user.id, productId],
   );
+
+  // Stock exceed check
+  const currentQty = existing.rows.length > 0 ? existing.rows[0].quantity : 0;
+  if (currentQty + quantity > product.stock) {
+    return NextResponse.json(
+      {
+        error: `Only ${product.stock - currentQty} item(s) available in stock`,
+      },
+      { status: 400 },
+    );
+  }
 
   if (existing.rows.length > 0) {
     await pool.query(

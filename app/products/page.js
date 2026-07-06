@@ -1,16 +1,16 @@
-// Details page
-
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { products, categories } from "@/lib/products-data";
 import { useCartStore } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [cartError, setCartError] = useState("")
   const addToCart = useCartStore((s) => s.addToCart);
 
   const filtered = products.filter((p) => {
@@ -23,6 +23,10 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Products</h1>
+
+        {cartError && (
+          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">{cartError}</p>
+        )}
 
         <div className="flex gap-4 mb-6">
           <Input
@@ -63,14 +67,21 @@ export default function ProductsPage() {
                 <p className="text-sm text-gray-500">{p.category}</p>
                 <p className="text-xl font-bold mt-2">₹{p.price}</p>
                 <div className="flex gap-2 mt-auto pt-4">
-                  <a href={`/products/${p.id}`} className="flex-1">
+                  <Link href={`/products/${p.id}`} className="flex-1">
                     <Button variant="outline" className="w-full">
                       View Details
                     </Button>
-                  </a>
+                  </Link>
                   <Button
                     disabled={p.stock === 0}
-                    onClick={() => addToCart(p.id, 1)}
+                    onClick={async () => {
+                      try {
+                        setCartError("")
+                        await addToCart(p.id, 1)
+                      } catch (err) {
+                        setCartError(err.message)
+                      }
+                    }}
                   >
                     {p.stock === 0 ? "Out of Stock" : "Add"}
                   </Button>
