@@ -22,7 +22,7 @@ export async function GET() {
   }
 
   const result = await pool.query(
-    "SELECT * FROM cart_items WHERE user_id = $1",
+    "SELECT * FROM cart_items WHERE user_id = $1 ORDER BY id ASC",
     [user.id],
   );
 

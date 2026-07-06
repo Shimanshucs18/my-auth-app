@@ -7,7 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function CartPage() {
-  const { items, fetchCart, removeFromCart, loading } = useCartStore();
+  const { items, fetchCart, removeFromCart, updateQuantity, loading } =
+    useCartStore();
 
   const stableFetchCart = useCallback(() => {
     fetchCart();
@@ -65,11 +66,31 @@ export default function CartPage() {
               />
               <div className="flex-1">
                 <h3 className="font-semibold">{item.product.name}</h3>
-                <p className="text-sm text-gray-500">
-                  ₹{item.product.price} × {item.quantity}
-                </p>
+                <p className="text-sm text-gray-500">₹{item.product.price}</p>
               </div>
-              <p className="font-bold">₹{item.product.price * item.quantity}</p>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  disabled={item.quantity <= 1}
+                >
+                  −
+                </Button>
+                <span className="w-8 text-center">{item.quantity}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                >
+                  +
+                </Button>
+              </div>
+
+              <p className="font-bold w-20 text-right">
+                ₹{item.product.price * item.quantity}
+              </p>
               <Button
                 variant="destructive"
                 size="sm"
