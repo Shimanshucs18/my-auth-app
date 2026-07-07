@@ -47,14 +47,15 @@ async function migrate() {
     console.log("✅ login_attempts table ready");
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS cart_items (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        product_id INTEGER NOT NULL,
-        quantity INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
+  CREATE TABLE IF NOT EXISTS cart_items (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT unique_user_product UNIQUE (user_id, product_id)
+  );
+`);
     console.log("✅ cart_items table ready");
 
     await pool.query(`
