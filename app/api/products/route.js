@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
-import { products } from "@/lib/products-data"
+import { NextResponse } from "next/server";
+import pool from "@/lib/db";
 
 export async function GET() {
-  return NextResponse.json({ products })
+  const result = await pool.query("SELECT * FROM products ORDER BY id ASC");
+  return NextResponse.json({ products: result.rows });
 }

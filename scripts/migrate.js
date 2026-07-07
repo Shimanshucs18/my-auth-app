@@ -80,6 +80,21 @@ async function migrate() {
     `);
     console.log("✅ order_items table ready");
 
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    price INTEGER NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    image TEXT NOT NULL,
+    description TEXT NOT NULL,
+    seller_name VARCHAR(100) NOT NULL,
+    stock INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+    console.log("✅ products table ready");
+
     console.log("🎉 All migrations completed successfully!");
   } catch (error) {
     console.error("❌ Migration failed:", error);
