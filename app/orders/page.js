@@ -17,6 +17,16 @@ export default function OrdersPage() {
       });
   }, []);
 
+  async function handleCancel(orderId) {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+    const res = await fetch(`/api/orders/${orderId}`, { method: "PATCH" });
+    const data = await res.json();
+    if (!res.ok) return alert(data.error);
+    setOrders(
+      orders.map((o) => (o.id === orderId ? { ...o, status: "CANCELLED" } : o)),
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -51,9 +61,26 @@ export default function OrdersPage() {
                     {new Date(order.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                  {order.status}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      order.status === "CANCELLED"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                  {order.status !== "CANCELLED" && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleCancel(order.id)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="divide-y">
