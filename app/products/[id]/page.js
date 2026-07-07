@@ -1,7 +1,7 @@
 // Listing page
 
 "use client";
-import { products } from "@/lib/products-data";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
@@ -10,8 +10,27 @@ import Image from "next/image";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const product = products.find((p) => p.id === parseInt(id));
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [cartError, setCartError] = useState("");
   const addToCart = useCartStore((s) => s.addToCart);
+
+  useEffect(() => {
+    fetch(`/api/products/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProduct(data.product || null);
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -38,7 +57,7 @@ export default function ProductDetailPage() {
           <p className="text-gray-700 mb-4">{product.description}</p>
           <p className="text-3xl font-bold mb-2">₹{product.price}</p>
           <p className="text-sm text-gray-500 mb-1">
-            Sold by: {product.sellerName}
+            Sold by: {product.seller_name}
           </p>
           <p
             className={`text-sm font-semibold mb-6 ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}
@@ -46,9 +65,22 @@ export default function ProductDetailPage() {
             {product.stock > 0 ? `In Stock (${product.stock})` : "Out of Stock"}
           </p>
 
+          {cartError && (
+            <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+              {cartError}
+            </p>
+          )}
+
           <Button
             disabled={product.stock === 0}
-            onClick={() => addToCart(product.id, 1)}
+            onClick={async () => {
+              try {
+                setCartError("");
+                await addToCart(product.id, 1);
+              } catch (err) {
+                setCartError(err.message);
+              }
+            }}
             className="w-full"
           >
             {product.stock === 0 ? "Out of Stock" : "Add to Cart"}

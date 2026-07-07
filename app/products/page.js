@@ -1,6 +1,5 @@
 "use client";
-import { useState } from "react";
-import { products, categories } from "@/lib/products-data";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +7,23 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-  const [cartError, setCartError] = useState("")
+  const [cartError, setCartError] = useState("");
+  const [loading, setLoading] = useState(true);
   const addToCart = useCartStore((s) => s.addToCart);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.products || []);
+        setLoading(false);
+      });
+  }, []);
+
+  const categories = ["All", ...new Set(products.map((p) => p.category))];
 
   const filtered = products.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -19,13 +31,23 @@ export default function ProductsPage() {
     return matchesSearch && matchesCategory;
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading products...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Products</h1>
 
         {cartError && (
-          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">{cartError}</p>
+          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+            {cartError}
+          </p>
         )}
 
         <div className="flex gap-4 mb-6">
@@ -40,7 +62,6 @@ export default function ProductsPage() {
             onChange={(e) => setCategory(e.target.value)}
             className="border rounded-md px-3 py-2 text-sm"
           >
-            <option value="All">All Categories</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -76,10 +97,10 @@ export default function ProductsPage() {
                     disabled={p.stock === 0}
                     onClick={async () => {
                       try {
-                        setCartError("")
-                        await addToCart(p.id, 1)
+                        setCartError("");
+                        await addToCart(p.id, 1);
                       } catch (err) {
-                        setCartError(err.message)
+                        setCartError(err.message);
                       }
                     }}
                   >
