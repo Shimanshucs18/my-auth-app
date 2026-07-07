@@ -1,88 +1,125 @@
-import pool from "@/lib/db"
-import { NextResponse } from "next/server"
-import { getAuthenticatedUser } from "@/lib/auth"
-import { products } from "@/lib/products-data"
+import pool from "@/lib/db";
+import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { products } from "@/lib/products-data";
 
-// Take all orders from the user
 export async function GET() {
-  const user = await getAuthenticatedUser()
+  const user = await getAuthenticatedUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const orders = await pool.query(
     "SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC",
-    [user.id]
-  )
+    [user.id],
+  );
 
   const ordersWithItems = await Promise.all(
     orders.rows.map(async (order) => {
       const items = await pool.query(
         "SELECT * FROM order_items WHERE order_id = $1",
-        [order.id]
-      )
-      return { ...order, items: items.rows }
-    })
-  )
+        [order.id],
+      );
+      return { ...order, items: items.rows };
+    }),
+  );
 
-  return NextResponse.json({ orders: ordersWithItems })
+  return NextResponse.json({ orders: ordersWithItems });
 }
 
-// Place an order by checking out from the cart.
 export async function POST() {
-  const user = await getAuthenticatedUser()
+  const user = await getAuthenticatedUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query("BEGIN")
+    await client.query("BEGIN");
 
     const cartResult = await client.query(
       "SELECT * FROM cart_items WHERE user_id = $1",
-      [user.id]
-    )
+      [user.id],
+    );
 
     if (cartResult.rows.length === 0) {
-      await client.query("ROLLBACK")
-      return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    const itemsWithPrice = cartResult.rows.map((item) => {
-      const product = products.find((p) => p.id === item.product_id)
-      return { ...item, price: product?.price || 0 }
-    })
+    // Har item validate karna transaction ke andar
+    const itemsWithPrice = [];
+    for (const item of cartResult.rows) {
+      const product = products.find((p) => p.id === item.product_id);
+
+      // Product exist ?
+      if (!product) {
+        await client.query("ROLLBACK");
+        return NextResponse.json(
+          {
+            error: `Product not found for item ${item.product_id}`,
+          },
+          { status: 400 },
+        );
+      }
+
+      // Product out of stock?
+      if (product.stock === 0) {
+        await client.query("ROLLBACK");
+        return NextResponse.json(
+          {
+            error: `${product.name} is out of stock`,
+          },
+          { status: 400 },
+        );
+      }
+
+      // Quantity stock ?
+      if (item.quantity > product.stock) {
+        await client.query("ROLLBACK");
+        return NextResponse.json(
+          {
+            error: `Only ${product.stock} item(s) available for ${product.name}`,
+          },
+          { status: 400 },
+        );
+      }
+
+      itemsWithPrice.push({ ...item, price: product.price });
+    }
 
     const total = itemsWithPrice.reduce(
       (sum, item) => sum + item.price * item.quantity,
-      0
-    )
+      0,
+    );
 
     const orderResult = await client.query(
       "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING *",
-      [user.id, total]
-    )
-    const order = orderResult.rows[0]
+      [user.id, total],
+    );
+    const order = orderResult.rows[0];
 
     for (const item of itemsWithPrice) {
       await client.query(
         "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)",
-        [order.id, item.product_id, item.quantity, item.price]
-      )
+        [order.id, item.product_id, item.quantity, item.price],
+      );
     }
 
-    await client.query("DELETE FROM cart_items WHERE user_id = $1", [user.id])
+    await client.query("DELETE FROM cart_items WHERE user_id = $1", [user.id]);
 
-    await client.query("COMMIT")
+    await client.query("COMMIT");
 
-    return NextResponse.json({ message: "Order placed!", order })
+    return NextResponse.json({ message: "Order placed!", order });
   } catch (error) {
-    await client.query("ROLLBACK")
-    console.error("Order creation failed:", error)
-    return NextResponse.json({ error: "Failed to place order" }, { status: 500 })
+    await client.query("ROLLBACK");
+    console.error("Order creation failed:", error);
+    return NextResponse.json(
+      { error: "Failed to place order" },
+      { status: 500 },
+    );
   } finally {
-    client.release()
+    client.release();
   }
 }
