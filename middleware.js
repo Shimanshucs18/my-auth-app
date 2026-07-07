@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 // Sirf yeh routes public hain — baaki sab protected
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/login", "/register", "/not-found", "/error"];
 
 export async function middleware(req) {
   const token = req.cookies.get("token")?.value;
