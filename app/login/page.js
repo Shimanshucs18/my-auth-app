@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginSchema } from "@/lib/validations";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -41,71 +40,74 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          Login
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-xl p-8 w-full max-w-md shadow-sm">
+        <h1 className="text-2xl font-medium text-gray-900 mb-1">Sign in</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Enter your credentials to continue
+        </p>
 
         {serverError && (
-          <p className="bg-red-100 text-red-600 p-3 rounded mb-4 text-sm">
+          <p className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
             {serverError}
           </p>
         )}
 
-        {/* Email Field */}
-        <div className="mb-4">
-          <Label htmlFor="email" className="mb-1 block">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="abc@gmail.com"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className={errors.email ? "border-red-500" : ""}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-          )}
-        </div>
+        <label className="text-sm text-gray-500 block mb-1">
+          Email address
+        </label>
+        <Input
+          type="email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className={`mb-3 ${errors.email ? "border-red-500" : ""}`}
+        />
+        {errors.email && (
+          <p className="text-red-500 text-xs mb-2">{errors.email}</p>
+        )}
 
-        {/* Password Field */}
-        <div className="mb-6">
-          <Label htmlFor="password" className="mb-1 block">
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className={errors.password ? "border-red-500" : ""}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-          )}
-        </div>
-
-        <Button onClick={handleSubmit} disabled={loading} className="w-full">
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-
-        <p className="mt-2 text-center text-sm">
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-sm text-gray-500">Password</label>
           <Link
             href="/forgot-password"
-            className="text-blue-600 hover:underline"
+            className="text-xs text-blue-600 hover:underline"
           >
-            Forgot Password?
+            Forgot password?
           </Link>
-        </p>
+        </div>
+        <Input
+          type="password"
+          placeholder="••••••••"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className={`mb-5 ${errors.password ? "border-red-500" : ""}`}
+        />
+        {errors.password && (
+          <p className="text-red-500 text-xs mb-2">{errors.password}</p>
+        )}
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-gray-900 hover:bg-gray-700 text-white"
+        >
+          {loading ? "Signing in..." : "Sign in"}
+        </Button>
+
+        <div className="flex items-center gap-2 my-4">
+          <div className="flex-1 h-px bg-gray-200"></div>
+          <span className="text-xs text-gray-400">or</span>
+          <div className="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <p className="text-center text-sm text-gray-500">
           No account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Register
+          <Link
+            href="/register"
+            className="text-gray-900 font-medium underline"
+          >
+            Create one
           </Link>
         </p>
       </div>
