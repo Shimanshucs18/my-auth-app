@@ -21,13 +21,21 @@ export default function Navbar() {
       { href: "/products", label: "Products" },
       { href: "/cart", label: "Cart" },
       { href: "/orders", label: "Orders" },
+      { href: "/profile", label: "Profile" },
     ],
     SELLER: [
       { href: "/seller/dashboard", label: "Seller Dashboard" },
       { href: "/products", label: "Products" },
+      { href: "/profile", label: "Profile" },
     ],
-    ADMIN: [{ href: "/admin", label: "Admin Panel" }],
-    SUPPORT: [{ href: "/support", label: "Support Dashboard" }],
+    ADMIN: [
+      { href: "/admin", label: "Admin Panel" },
+      { href: "/profile", label: "Profile" },
+    ],
+    SUPPORT: [
+      { href: "/support", label: "Support Dashboard" },
+      { href: "/profile", label: "Profile" },
+    ],
   };
 
   const links = linksByRole[user.role] || [];
