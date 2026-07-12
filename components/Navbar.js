@@ -47,7 +47,12 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white shadow-sm px-6 py-3 flex items-center gap-6">
-      <span className="font-bold">MyAuthApp</span>
+      <a
+        href="/dashboard"
+        className="font-bold text-gray-900 hover:text-gray-700"
+      >
+        MyAuthApp
+      </a>
       {links.map((link) => (
         <a
           key={link.href}
