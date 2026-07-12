@@ -1,33 +1,45 @@
-"use client"
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
+"use client";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function AdminClient({ currentUser }) {
-  const [users, setUsers] = useState([])
-  const [error, setError] = useState("")
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/auth/users")
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) return setError(data.error)
-        setUsers(data.users)
-      })
-  }, [])
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) return setError(data.error);
+        setUsers(data.users);
+      });
+  }, []);
 
   async function handleDelete(id) {
-    if (!confirm("Are you sure you want to delete this user?")) return
-    const res = await fetch(`/api/auth/users/${id}`, { method: "DELETE" })
-    const data = await res.json()
-    if (!res.ok) return alert(data.error)
-    setUsers(users.filter(u => u.id !== id))
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    const res = await fetch(`/api/auth/users/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (!res.ok) return alert(data.error);
+    setUsers(users.filter((u) => u.id !== id));
   }
 
-  if (error) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <p className="text-red-500 text-lg">{error}</p>
-    </div>
-  )
+  async function handleRoleChange(id, newRole) {
+    const res = await fetch(`/api/auth/users/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: newRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.error);
+    setUsers(users.map((u) => (u.id === id ? { ...u, role: newRole } : u)));
+  }
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-red-500 text-lg">{error}</p>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -52,31 +64,58 @@ export default function AdminClient({ currentUser }) {
                 <th className="px-6 py-3 text-left text-sm">Name</th>
                 <th className="px-6 py-3 text-left text-sm">Email</th>
                 <th className="px-6 py-3 text-left text-sm">Role</th>
-                <th className="px-6 py-3 text-left text-sm">Action</th>
+                <th className="px-6 py-3 text-left text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u, i) => (
-                <tr key={u.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <tr
+                  key={u.id}
+                  className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
                   <td className="px-6 py-4 text-sm text-gray-700">{u.id}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{u.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{u.email}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                      u.role === "ADMIN" ? "bg-red-500" : "bg-blue-500"
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                        u.role === "ADMIN"
+                          ? "bg-red-500"
+                          : u.role === "SELLER"
+                            ? "bg-purple-500"
+                            : u.role === "SUPPORT"
+                              ? "bg-yellow-500"
+                              : "bg-blue-500"
+                      }`}
+                    >
                       {u.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    {u.role !== "ADMIN" && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(u.id)}
-                      >
-                        Delete
-                      </Button>
+                    {u.id !== currentUser.id && (
+                      <div className="flex gap-2 items-center">
+                        <select
+                          value={u.role}
+                          onChange={(e) =>
+                            handleRoleChange(u.id, e.target.value)
+                          }
+                          className="text-sm border rounded px-2 py-1"
+                        >
+                          <option value="USER">USER</option>
+                          <option value="SELLER">SELLER</option>
+                          <option value="SUPPORT">SUPPORT</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                        {u.role !== "ADMIN" && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(u.id)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -86,5 +125,5 @@ export default function AdminClient({ currentUser }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
