@@ -95,6 +95,17 @@ async function migrate() {
 `);
     console.log("✅ products table ready");
 
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+    console.log("✅ password_resets table ready");
+
     console.log("🎉 All migrations completed successfully!");
   } catch (error) {
     console.error("❌ Migration failed:", error);
