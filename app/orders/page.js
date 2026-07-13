@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { products } from "@/lib/products-data";
+// import { products } from "@/lib/products-data";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -84,22 +84,17 @@ export default function OrdersPage() {
               </div>
 
               <div className="divide-y">
-                {order.items.map((item) => {
-                  const product = products.find(
-                    (p) => p.id === item.product_id,
-                  );
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex justify-between py-2 text-sm"
-                    >
-                      <span>
-                        {product?.name || "Unknown product"} × {item.quantity}
-                      </span>
-                      <span>₹{item.price * item.quantity}</span>
-                    </div>
-                  );
-                })}
+                {order.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between py-2 text-sm"
+                  >
+                    <span>
+                      {item.name || "Unknown product"} × {item.quantity}
+                    </span>
+                    <span>₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="border-t mt-2 pt-2 flex justify-between font-bold">

@@ -1,7 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { products } from "@/lib/products-data";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -17,7 +16,16 @@ export async function GET() {
   const ordersWithItems = await Promise.all(
     orders.rows.map(async (order) => {
       const items = await pool.query(
-        "SELECT * FROM order_items WHERE order_id = $1",
+        `SELECT 
+          oi.id,
+          oi.order_id,
+          oi.product_id,
+          oi.quantity,
+          oi.price,
+          p.name
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = $1`,
         [order.id],
       );
       return { ...order, items: items.rows };
@@ -48,18 +56,20 @@ export async function POST() {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // Har item validate karna transaction ke andar
+    // Har item validate karo transaction ke andar — DB se
     const itemsWithPrice = [];
     for (const item of cartResult.rows) {
-      const product = products.find((p) => p.id === item.product_id);
+      const productResult = await client.query(
+        "SELECT * FROM products WHERE id = $1",
+        [item.product_id],
+      );
+      const product = productResult.rows[0];
 
-      // Product exist ?
+      // Product exist?
       if (!product) {
         await client.query("ROLLBACK");
         return NextResponse.json(
-          {
-            error: `Product not found for item ${item.product_id}`,
-          },
+          { error: `Product not found for item ${item.product_id}` },
           { status: 400 },
         );
       }
@@ -68,14 +78,12 @@ export async function POST() {
       if (product.stock === 0) {
         await client.query("ROLLBACK");
         return NextResponse.json(
-          {
-            error: `${product.name} is out of stock`,
-          },
+          { error: `${product.name} is out of stock` },
           { status: 400 },
         );
       }
 
-      // Quantity stock ?
+      // Quantity stock se zyada?
       if (item.quantity > product.stock) {
         await client.query("ROLLBACK");
         return NextResponse.json(

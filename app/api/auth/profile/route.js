@@ -61,6 +61,11 @@ export async function PATCH(req) {
       hashed,
       user.id,
     ]);
+
+    // Purane refresh tokens delete karo — security ke liye
+    await pool.query("DELETE FROM refresh_tokens WHERE user_id = $1", [
+      user.id,
+    ]);
   }
 
   return NextResponse.json({ message: "Profile updated successfully!" });

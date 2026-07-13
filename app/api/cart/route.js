@@ -2,7 +2,6 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import { products } from "@/lib/products-data";
 import { addToCartSchema } from "@/lib/validations";
 
 export async function GET() {
@@ -21,7 +20,20 @@ export async function GET() {
   }
 
   const result = await pool.query(
-    "SELECT * FROM cart_items WHERE user_id = $1 ORDER BY id ASC",
+    `SELECT 
+      ci.id,
+      ci.user_id,
+      ci.product_id,
+      ci.quantity,
+      ci.created_at,
+      p.name,
+      p.price,
+      p.image,
+      p.stock
+    FROM cart_items ci
+    JOIN products p ON ci.product_id = p.id
+    WHERE ci.user_id = $1
+    ORDER BY ci.id ASC`,
     [user.id],
   );
 
@@ -56,8 +68,13 @@ export async function POST(req) {
 
   const { productId, quantity } = result.data;
 
-  // Product exist karta hai?
-  const product = products.find((p) => p.id === productId);
+  // Product exist karta hai? — DB se check karo
+  const productResult = await pool.query(
+    "SELECT * FROM products WHERE id = $1",
+    [productId]
+  );
+  const product = productResult.rows[0];
+
   if (!product) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }

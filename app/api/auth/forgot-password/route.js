@@ -15,11 +15,10 @@ export async function POST(req) {
   ]);
 
   if (userResult.rows.length === 0) {
-  return NextResponse.json(
-    { error: "No account found with this email." },
-    { status: 404 }
-  );
-}
+    return NextResponse.json({
+      message: "If this email exists, a reset link has been sent.",
+    });
+  }
 
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
