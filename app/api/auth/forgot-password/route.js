@@ -2,14 +2,23 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import { forgotPasswordSchema } from "@/lib/validations";
 
 export async function POST(req) {
-  const { email } = await req.json();
+  // User ka bheja hua data lo
+  const body = await req.json();
 
-  if (!email) {
-    return NextResponse.json({ error: "Email required" }, { status: 400 });
+  // Email sahi format mein hai ya nahi check karo
+  const result = forgotPasswordSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json(
+      { error: result.error.issues[0].message },
+      { status: 400 },
+    );
   }
 
+  // Validation pass — saaf email nikaalo
+  const { email } = result.data;
   const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
   ]);
@@ -53,7 +62,9 @@ export async function POST(req) {
         <p>If you did not request this, ignore this email.</p>
       `,
     });
-    console.log("Email sent successfully to:", email);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Email sent successfully to:", email);
+    }
   } catch (emailError) {
     console.error("Email sending failed:", emailError);
   }
