@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useCallback } from "react";
 import { useCartStore } from "@/lib/cart-store";
-import { products } from "@/lib/products-data";
+// import { products } from "@/lib/products-data";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,15 +18,15 @@ export default function CartPage() {
     stableFetchCart();
   }, [stableFetchCart]);
 
-  const cartDetails = items
-    .map((item) => {
-      const product = products.find((p) => p.id === item.product_id);
-      return { ...item, product };
-    })
-    .filter((item) => item.product);
+  // const cartDetails = items
+  //   .map((item) => {
+  //     const product = products.find((p) => p.id === item.product_id);
+  //     return { ...item, product };
+  //   })
+  //   .filter((item) => item.product);
 
-  const subtotal = cartDetails.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0,
   );
 
@@ -38,7 +38,7 @@ export default function CartPage() {
     );
   }
 
-  if (cartDetails.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
         <p className="text-gray-500 text-lg mb-4">Your cart is empty.</p>
@@ -55,18 +55,18 @@ export default function CartPage() {
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
 
         <div className="bg-white rounded-xl shadow-md divide-y">
-          {cartDetails.map((item) => (
+          {items.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-4">
               <Image
-                src={item.product.image}
-                alt={item.product.name}
+                src={item.image}
+                alt={item.name}
                 width={80}
                 height={80}
                 className="object-cover rounded-lg"
               />
               <div className="flex-1">
-                <h3 className="font-semibold">{item.product.name}</h3>
-                <p className="text-sm text-gray-500">₹{item.product.price}</p>
+                <h3 className="font-semibold">{item.name}</h3>
+                <p className="text-sm text-gray-500">₹{item.price}</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -83,13 +83,14 @@ export default function CartPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  disabled={item.quantity >= item.stock}
                 >
                   +
                 </Button>
               </div>
 
               <p className="font-bold w-20 text-right">
-                ₹{item.product.price * item.quantity}
+                ₹{item.price * item.quantity}
               </p>
               <Button
                 variant="destructive"
@@ -105,7 +106,7 @@ export default function CartPage() {
         <div className="bg-white rounded-xl shadow-md mt-6 p-6 flex justify-between items-center">
           <div>
             <p className="text-sm text-gray-500">
-              {cartDetails.reduce((sum, i) => sum + i.quantity, 0)} item(s)
+              {items.reduce((sum, i) => sum + i.quantity, 0)} item(s)
             </p>
             <p className="text-2xl font-bold">Subtotal: ₹{subtotal}</p>
           </div>
