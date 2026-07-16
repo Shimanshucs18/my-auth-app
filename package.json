@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+     "test": "vitest",
     "lint": "eslint",
     "seed": "node --experimental-vm-modules scripts/seed-admin.js",
     "migrate": "node --experimental-vm-modules scripts/migrate.js",
@@ -38,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.1"
+    "tailwindcss": "^4.3.1",
+    "vitest": "^4.1.10"
   }
 }
