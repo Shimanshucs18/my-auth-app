@@ -82,7 +82,8 @@ async function migrate() {
 
     await pool.query(`
   CREATE TABLE IF NOT EXISTS products (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY, 
+    seller_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
     price INTEGER NOT NULL,
     category VARCHAR(100) NOT NULL,
@@ -96,6 +97,19 @@ async function migrate() {
     console.log("✅ products table ready");
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS seller_profiles (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        shop_name VARCHAR(100) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      `);
+    console.log("✅ seller_profiles table ready");
+
+    await pool.query(`
   CREATE TABLE IF NOT EXISTS password_resets (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) NOT NULL,
@@ -105,6 +119,16 @@ async function migrate() {
   );
 `);
     console.log("✅ password_resets table ready");
+
+    await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_products_seller_id ON products(seller_id);
+`);
+    console.log("✅ products seller_id index ready");
+
+    await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_seller_profiles_user_id ON seller_profiles(user_id);
+`);
+    console.log("✅ seller_profiles user_id index ready");
 
     console.log("🎉 All migrations completed successfully!");
   } catch (error) {
