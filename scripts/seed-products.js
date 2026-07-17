@@ -81,11 +81,18 @@ async function seedProducts() {
   try {
     console.log("Seeding products...");
 
+    const adminResult = await pool.query(
+      "SELECT id FROM users WHERE email = $1",
+      ["admin@myapp.com"],
+    );
+    const adminId = adminResult.rows[0].id;
+    console.log("Admin id found:", adminId);
+
     for (const product of products) {
       await pool.query(
         `
-        INSERT INTO products (id, name, price, category, image, description, seller_name, stock)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO products (id, name, price, category, image, description, seller_name, stock, seller_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
           price = EXCLUDED.price,
@@ -93,7 +100,8 @@ async function seedProducts() {
           image = EXCLUDED.image,
           description = EXCLUDED.description,
           seller_name = EXCLUDED.seller_name,
-          stock = EXCLUDED.stock
+          stock = EXCLUDED.stock,
+          seller_id = EXCLUDED.seller_id
       `,
         [
           product.id,
@@ -104,6 +112,7 @@ async function seedProducts() {
           product.description,
           product.seller_name,
           product.stock,
+          adminId,
         ],
       );
       console.log(`✅ ${product.name} seeded`);
